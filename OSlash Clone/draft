@@ -1,0 +1,48 @@
+let http = require('http');
+let url = require('url');
+let querystring = require('querystring');
+let static = require('node-static');
+let fileServer = new static.Server('.');
+
+function onDigits(req, res) {
+  res.writeHead(200, {
+    "Content-Type": "application/json",
+    "Append": "application/json",
+    "Auth": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY3MDQwNTI4MX0.-AjY1HBp4VQ-76zVU3HVNsAcOitvtrKcj0p3AiRP8Ss"
+  });
+
+  let i = 0;
+
+  let timer = setInterval(write, 1000);
+  write();
+
+  function write() {
+    i++;
+
+    if (i == 4) {
+      res.write('event: bye\ndata: bye-bye\n\n');
+      clearInterval(timer);
+      res.end();
+      return;
+    }
+
+    res.write('data: ' + i + '\n\n');
+
+  }
+}
+
+function accept(req, res) {
+
+  if (req.url == 'http://localhost:4000/graphql') {
+    onDigits(req, res);
+    return;
+  }
+
+  fileServer.serve(req, res);
+}
+
+if (!module.parent) {
+  http.createServer(accept).listen(4040);
+} else {
+  exports.accept = accept;
+}
